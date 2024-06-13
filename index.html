@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://unpkg.com/boxicons@2.1.4/css/boxicons.min.css" rel="stylesheet">
+    <title>Login & Registro</title>
+</head>
+<body>
+    <header>
+        <h2 class="logo">
+            <img src="logorubus.png" alt="Logo" class="logo-img">
+            RuBus
+        </h2>
+        <nav class="navegación">
+            <a href="#inicio" class="nav-link" data-section="inicio">Inicio</a>
+            <a href="#informacion" class="nav-link" data-section="informacion">Información</a>
+            <a href="#contactos" class="nav-link" data-section="contactos">Contactos</a>
+            <button class="btn-iniciar-sesion">Iniciar sesión</button>
+        </nav>
+    </header>    
+    <div class="fondo">
+        <span class="icono-cerrar"><i class='bx bx-x'></i></span>
+        <div class="contenedor-form login active">
+            <h2>Iniciar Sesión</h2>
+            <form action="#">
+                <div class="contenedor-input">
+                    <span class="icono"><i class='bx bxs-envelope'></i></span>
+                    <input type="email" id="email-login" required>
+                    <label for="email-login">Email</label>
+                </div>
+                <div class="contenedor-input">
+                    <span class="icono"><i class='bx bxs-lock-alt'></i></span>
+                    <input type="password" id="password-login" required>
+                    <label for="password-login">Contraseña</label>
+                </div>
+                <div class="recordar">
+                    <label for="recordar-login"><input type="checkbox" id="recordar-login">Recordar Sesión</label>
+                    <a href="#">¿Olvidé la contraseña?</a>
+                </div>
+                <button type="submit" class="btn">Iniciar Sesión</button>
+                <div class="registrar">
+                    <p>¿No tienes una cuenta? <a href="#" class="registrar-link">Registrarse</a></p>
+                </div>
+            </form>
+        </div>
+        <div class="contenedor-form registrar">
+            <h2>Registrarse</h2>
+            <form action="#">
+                <div class="contenedor-input">
+                    <span class="icono"><i class='bx bxs-user'></i></span>
+                    <input type="text" id="username" required>
+                    <label for="username">Nombre de Usuario</label>
+                </div>
+                <div class="contenedor-input">
+                    <span class="icono"><i class='bx bxs-envelope'></i></span>
+                    <input type="email" id="email-register" required>
+                    <label for="email-register">Email</label>
+                </div>
+                <div class="contenedor-input">
+                    <span class="icono"><i class='bx bxs-lock-alt'></i></span>
+                    <input type="password" id="password-register" required>
+                    <label for="password-register">Contraseña</label>
+                </div>
+                <div class="recordar">
+                    <label for="terms"><input type="checkbox" id="terms">Acepto los términos y condiciones</label>
+                </div>
+                <button type="submit" class="btn">Registrarse</button>
+                <div class="registrarse">
+                    <p>¿Tienes una cuenta? <a href="#" class="login-link">Iniciar Sesión</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+    <section id="inicio" class="section-content active">
+        <h2>Bienvenido a RuBus</h2>
+        <p>Utiliza los enlaces de navegación para ver más información.</p>
+    </section>
+    <section id="informacion" class="section-content">
+        <h2>Información</h2>
+        <p>RuBus es un sistema de gestión de rutas que facilita el seguimiento y la administración de rutas de transporte.</p>
+        <p>Nuestro objetivo es optimizar los recorridos, mejorar la puntualidad y ofrecer un servicio de alta calidad a nuestros usuarios.</p>
+    </section>
+    <section id="contactos" class="section-content">
+        <h2>Contactos</h2>
+        <p>Puedes contactarnos a través de nuestras redes sociales:</p>
+        <ul>
+            <li><a href="#">Facebook - Rubus</a></li>
+            <li><a href="#">Twitter - @rubus</a></li>
+            <li><a href="#">Instagram - ruBus</a></li>
+        </ul>
+    </section>
+    <script src="app.js"></script>
+</body>
+</html>

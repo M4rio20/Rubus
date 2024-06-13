@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mapa-Rubus</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            background-color: #f0f0f0;
+        }
+        .sidebar {
+            width: 25%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 40px;
+            background: url('imagen2.png') no-repeat center center;
+            background-size: cover;
+            box-shadow: 0 0 10px rgba(73, 59, 59, 0.1);
+            justify-content: space-between;
+        }
+        .logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 20px;
+        }
+        .logo-container img {
+            width: 120px;
+            height: auto;
+            margin-right: 10px;
+        }
+        .logo-container h1 {
+            font-size: 45px;
+            color: white;
+            margin: 0;
+        }
+        .map-container {
+            width: 1025px;
+            height: 697px;
+        }
+        .search-container {
+            width: 100%;
+            margin-bottom: 25px;
+        }
+        .search-container input[type=text] {
+            width: calc(80% - 20px);
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 20px;
+            border: 1px solid #ccc;
+            margin-bottom: 15px;
+            margin-left: 30px;
+        }
+        .search-container button {
+            width: 80%;
+            padding: 10px;
+            font-size: 16px;
+            border-radius: 5px;
+            border: none;
+            background: transparent;
+            border: 2px solid #fff;
+            cursor: pointer;
+            color: white;
+            margin-bottom: 15px;
+            margin-left: 30px;
+        }
+        .search-container button:hover {
+            background: #fff;
+            color: #090f1d;
+        }
+        .logout-container {
+            width: 100%;
+        }
+        .logout-container button {
+            width: calc(50% - 20px);
+            padding: 10px;
+            font-size: 16px;
+            width: 140px;
+            height: 50px;
+            background: transparent;
+            border: 2px solid #fff;
+            cursor: pointer;
+            font-size: 1.1rem;
+            color: #fff;
+            font-weight: 600;
+            margin-left: 102px;
+        }
+        .logout-container button:hover {
+            background: #fff;
+            color: #090f1d;
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="logo-container">
+            <img src="logorubus.png" alt="Logo de RuBus">
+            <h1>RuBus</h1>
+        </div>
+        <div class="search-container">
+            <input type="text" id="origin-input" placeholder="Selecciona un punto de partida">
+            <input type="text" id="destination-input" placeholder="Selecciona un destino">
+            <button onclick="setCurrentLocation()">Desde tu ubicación actual</button>
+            <button onclick="searchRoute()">Buscar ruta</button>
+        </div>
+        <div class="logout-container">
+            <button onclick="logout()">Cerrar sesión</button>
+        </div>
+    </div>
+    <div id="map" class="map-container"></div>
+
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+    <script src="https://unpkg.com/leaflet-routing-machine/dist/locales/leaflet-routing-machine-es.js"></script>
+    <script>
+        var map = L.map('map').setView([-12.0464, -77.0428], 13);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        }).addTo(map);
+
+        var routingControl;
+        var markers = [];
+
+        function clearMap() {
+            if (routingControl) {
+                map.removeControl(routingControl);
+                routingControl = null;
+            }
+
+            markers.forEach(marker => {
+                map.removeLayer(marker);
+            });
+
+            markers = [];
+        }
+
+        function setCurrentLocation() {
+            clearMap();
+            navigator.geolocation.getCurrentPosition(function(position) {
+                var lat = position.coords.latitude;
+                var lon = position.coords.longitude;
+
+                // Reverse geocoding to get the address
+                fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        var address = data.display_name;
+                        document.getElementById('origin-input').value = address;
+
+                        map.setView(new L.LatLng(lat, lon), 13);
+
+                        var marker = L.marker([lat, lon]).addTo(map)
+                            .bindPopup("Origen: " + address)
+                            .on('mouseover', function(e) {
+                                this.openPopup();
+                            })
+                            .on('mouseout', function(e) {
+                                this.closePopup();
+                            });
+
+                        markers.push(marker);
+                    });
+            }, function(error) {
+                alert("No se pudo obtener tu ubicación actual.");
+            });
+        }
+
+        function searchRoute() {
+            var origin = document.getElementById('origin-input').value;
+            var destination = document.getElementById('destination-input').value;
+
+            if (!origin || !destination) {
+                alert("Por favor, ingresa tanto el punto de partida como el destino.");
+                return;
+            }
+
+            clearMap();
+
+            fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${origin}`)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.length > 0) {
+                        var originLat = data[0].lat;
+                        var originLon = data[0].lon;
+                        var originAddress = data[0].display_name;
+                        document.getElementById('origin-input').value = originAddress;
+
+                        var originMarker = L.marker([originLat, originLon]).addTo(map)
+                            .bindPopup("Origen: " + originAddress)
+                            .on('mouseover', function(e) {
+                                this.openPopup();
+                            })
+                            .on('mouseout', function(e) {
+                                this.closePopup();
+                            });
+
+                        markers.push(originMarker);
+
+                        fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${destination}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                if (data.length > 0) {
+                                    var destinationLat = data[0].lat;
+                                    var destinationLon = data[0].lon;
+                                    var destinationAddress = data[0].display_name;
+                                    document.getElementById('destination-input').value = destinationAddress;
+
+                                    var destinationMarker = L.marker([destinationLat, destinationLon]).addTo(map)
+                                        .bindPopup("Destino: " + destinationAddress)
+                                        .on('mouseover', function(e) {
+                                            this.openPopup();
+                                        })
+                                        .on('mouseout', function(e) {
+                                            this.closePopup();
+                                        });
+
+                                    markers.push(destinationMarker);
+
+                                    routingControl = L.Routing.control({
+                                        waypoints: [
+                                            L.latLng(originLat, originLon),
+                                            L.latLng(destinationLat, destinationLon)
+                                        ],
+                                        router: L.Routing.osrmv1({
+                                            language: 'es',
+                                            profile: 'car'
+                                        }),
+                                        routeWhileDragging: true,
+                                        createMarker: function(i, waypoint, n) {
+                                            var marker = L.marker(waypoint.latLng, {
+                                                draggable: true
+                                            });
+                                            marker.bindPopup(i === 0 ? "Origen: " + originAddress : "Destino: " + destinationAddress);
+                                            marker.on('mouseover', function(e) {
+                                                this.openPopup();
+                                            });
+                                            marker.on('mouseout', function(e) {
+                                                this.closePopup();
+                                            });
+                                            return marker;
+                                        },
+                                        lineOptions: {
+                                            styles: [{ color: 'blue', opacity: 1, weight: 5 }]
+                                        }
+                                    }).addTo(map);
+                                } else {
+                                    alert("Destino no encontrado.");
+                                }
+                            });
+                    } else {
+                        alert("Punto de partida no encontrado.");
+                    }
+                });
+        }
+
+        function logout() {
+            window.location.href = "index.html";
+        }
+    </script>
+</body>
+</html>
